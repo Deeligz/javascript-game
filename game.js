@@ -6,10 +6,10 @@ let gameActive = false;
 let clock = new THREE.Clock();
 let spawnRate = 1200; // Decreased from 1500 - obstacles spawn faster
 let lastSpawnTime = 0;
-let playerSpeed = 0.2; // Increased from 0.15
-let gameSpeed = 0.5; // Increased from 0.3
-let gameSpeedIncrement = 0.0002; // Increased from 0.0001
-let maxGameSpeed = 1.2; // Increased from 0.8
+let playerSpeed = 0.25; // Increased from 0.2 for better control at higher speeds
+let gameSpeed = 0.6; // Increased from 0.5 for faster initial speed
+let gameSpeedIncrement = 0.0003; // Increased from 0.0002 for faster acceleration
+let maxGameSpeed = 2.0; // Increased from 1.2 for higher top speed
 let playerVelocity = new THREE.Vector3();
 let playerDirection = new THREE.Vector3();
 let moveLeft = false;
@@ -23,9 +23,9 @@ let soundsInitialized = false;
 
 // Jumping variables
 let isJumping = false;
-let jumpHeight = 3;
-let jumpSpeed = 0.25; // Increased from 0.15
-let gravity = 0.015; // Increased from 0.01
+let jumpHeight = 3.5; // Increased from 3 for higher jumps
+let jumpSpeed = 0.3; // Increased from 0.25 for faster jumps
+let gravity = 0.018; // Increased from 0.015 for faster falls
 let verticalVelocity = 0;
 let defaultPlayerHeight = 1; // Y position when on the ground
 // Track distance
@@ -495,7 +495,8 @@ function animate() {
             lastSpawnTime = currentTime;
             
             // Increase difficulty over time - obstacles spawn more frequently
-            spawnRate = Math.max(300, spawnRate - 20); // Decreased minimum spawn rate and increased decrement
+            // Adjusted to scale with game speed for better balance
+            spawnRate = Math.max(250, spawnRate - 25); // Decreased minimum spawn rate and increased decrement
         }
         
         // Check for collisions
