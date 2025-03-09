@@ -471,7 +471,13 @@ function animate() {
         // Update obstacles
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const obstacle = obstacles[i];
+            const previousZ = obstacle.position.z;
             obstacle.position.z -= gameSpeed;
+            
+            // Play whoosh sound when an obstacle passes the player (around z=0)
+            if (previousZ >= 0 && obstacle.position.z < 0) {
+                playWhooshSound();
+            }
             
             // Remove obstacles that are out of bounds
             if (obstacle.position.z < -25) {
@@ -479,9 +485,6 @@ function animate() {
                 obstacles.splice(i, 1);
                 score += 1;
                 updateUI();
-                
-                // Play whoosh sound when passing an obstacle
-                playWhooshSound();
             }
         }
         
