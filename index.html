@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Runner Extreme</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-container">
+            <div id="score">Score: <span id="score-value">0</span></div>
+        </div>
+        <div id="game-over" class="hidden">
+            <h2>Game Over!</h2>
+            <p>Your final score: <span id="final-score">0</span></p>
+            <button id="restart-button">Play Again</button>
+        </div>
+        <div id="start-screen">
+            <h1>Office Runner Extreme</h1>
+            <p>Race through the office at high speed and dodge obstacles!</p>
+            <p>Use A/D or Left/Right arrows to move (inverted controls)</p>
+            <p>Press SPACE to jump over obstacles</p>
+            <button id="start-button">Start Game</button>
+        </div>
+        
+        <!-- Mobile Controls -->
+        <div id="mobile-controls">
+            <div id="left-button" class="control-button">◀</div>
+            <div id="jump-button" class="control-button">▲</div>
+            <div id="right-button" class="control-button">▶</div>
+        </div>
+    </div>
+    
+    <!-- Three.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- Game script -->
+    <script src="game.js"></script>
+</body>
+</html>
