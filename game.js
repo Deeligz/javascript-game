@@ -6,10 +6,10 @@ let gameActive = false;
 let clock = new THREE.Clock();
 let spawnRate = 1200; // Decreased from 1500 - obstacles spawn faster
 let lastSpawnTime = 0;
-let playerSpeed = 0.25; // Increased from 0.2 for better control at higher speeds
-let gameSpeed = 0.6; // Increased from 0.5 for faster initial speed
-let gameSpeedIncrement = 0.0003; // Increased from 0.0002 for faster acceleration
-let maxGameSpeed = 2.0; // Increased from 1.2 for higher top speed
+let playerSpeed = 0.3; // Increased from 0.25 for better control at even higher speeds
+let gameSpeed = 0.7; // Increased from 0.6 for faster initial speed
+let gameSpeedIncrement = 0.0004; // Increased from 0.0003 for faster acceleration
+let maxGameSpeed = 3.0; // Increased from 2.0 for even higher top speed
 let playerVelocity = new THREE.Vector3();
 let playerDirection = new THREE.Vector3();
 let moveLeft = false;
@@ -23,9 +23,9 @@ let soundsInitialized = false;
 
 // Jumping variables
 let isJumping = false;
-let jumpHeight = 3.5; // Increased from 3 for higher jumps
-let jumpSpeed = 0.3; // Increased from 0.25 for faster jumps
-let gravity = 0.018; // Increased from 0.015 for faster falls
+let jumpHeight = 4.0; // Increased from 3.5 for even higher jumps
+let jumpSpeed = 0.35; // Increased from 0.3 for faster jumps
+let gravity = 0.02; // Increased from 0.018 for faster falls
 let verticalVelocity = 0;
 let defaultPlayerHeight = 1; // Y position when on the ground
 // Track distance
@@ -260,24 +260,45 @@ function createPlayer() {
 
 // Create an obstacle
 function createObstacle() {
-    // Determine the type of obstacle (0: chair, 1: desk, 2: filing cabinet)
+    // Determine the type of obstacle (0: chair, 1: desk, 2: filing cabinet, 3: water cooler)
     let obstacleType;
     do {
-        obstacleType = Math.floor(Math.random() * 3);
+        obstacleType = Math.floor(Math.random() * 4); // Now 4 types of obstacles
     } while (obstacleType === lastObstacleType); // Avoid consecutive same obstacles
     
     lastObstacleType = obstacleType;
     
     let obstacle;
     
-    // Determine the lane (left, center, right)
-    const lane = Math.floor(Math.random() * 3) - 1; // -1, 0, 1
-    const xPosition = lane * 3; // Position in one of three lanes
+    // Determine the lane (left, center, right) with higher probability for center lane
+    // Use weighted random selection: 20% left, 50% center, 30% right
+    const random = Math.random();
+    let lane;
+    if (random < 0.2) {
+        lane = -1; // Left lane (20% chance)
+    } else if (random < 0.7) {
+        lane = 0;  // Center lane (50% chance)
+    } else {
+        lane = 1;  // Right lane (30% chance)
+    }
+    
+    // Add some variation to the position within the lane
+    const laneVariation = (Math.random() - 0.5) * 0.8; // Small random offset
+    const xPosition = (lane * 3) + laneVariation; // Position in lane with variation
     
     switch (obstacleType) {
         case 0: // Chair
-            const chairGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-            const chairMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            // Make chairs more varied in size
+            const chairWidth = 1.5 + (Math.random() * 0.5 - 0.25); // 1.25-1.75
+            const chairHeight = 1.5 + (Math.random() * 0.3 - 0.15); // 1.35-1.65
+            const chairDepth = 1.5 + (Math.random() * 0.3 - 0.15); // 1.35-1.65
+            
+            const chairGeometry = new THREE.BoxGeometry(chairWidth, chairHeight, chairDepth);
+            const chairMaterial = new THREE.MeshStandardMaterial({ 
+                color: Math.random() > 0.5 ? 0xff0000 : 0x0000ff, // Randomly red or blue
+                roughness: 0.8,
+                metalness: 0.1
+            });
             obstacle = new THREE.Mesh(chairGeometry, chairMaterial);
             break;
             
@@ -289,12 +310,50 @@ function createObstacle() {
                 metalness: 0.2
             });
             obstacle = new THREE.Mesh(deskGeometry, deskMaterial);
+            
+            // Sometimes add a computer on top of the desk
+            if (Math.random() > 0.5) {
+                const computerGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.4);
+                const computerMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                const computer = new THREE.Mesh(computerGeometry, computerMaterial);
+                computer.position.set(0, 0.9, 0); // Position on top of desk
+                obstacle.add(computer);
+            }
             break;
             
         case 2: // Filing cabinet
             const cabinetGeometry = new THREE.BoxGeometry(1, 3, 1);
-            const cabinetMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
+            const cabinetMaterial = new THREE.MeshStandardMaterial({ 
+                color: Math.random() > 0.5 ? 0x444444 : 0x666666, // Dark or light gray
+                roughness: 0.9,
+                metalness: 0.3
+            });
             obstacle = new THREE.Mesh(cabinetGeometry, cabinetMaterial);
+            break;
+            
+        case 3: // Water cooler (new obstacle type)
+            // Create the base
+            const baseGeometry = new THREE.BoxGeometry(1, 0.5, 1);
+            const baseMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            obstacle = new THREE.Mesh(baseGeometry, baseMaterial);
+            
+            // Create the water tank
+            const tankGeometry = new THREE.CylinderGeometry(0.4, 0.4, 1.2, 8);
+            const tankMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x87CEFA, // Light blue
+                transparent: true,
+                opacity: 0.7
+            });
+            const tank = new THREE.Mesh(tankGeometry, tankMaterial);
+            tank.position.set(0, 0.85, 0); // Position on top of base
+            obstacle.add(tank);
+            
+            // Create the spout
+            const spoutGeometry = new THREE.BoxGeometry(0.8, 0.3, 0.3);
+            const spoutMaterial = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+            const spout = new THREE.Mesh(spoutGeometry, spoutMaterial);
+            spout.position.set(0, 0.25, 0.5); // Position on front of base
+            obstacle.add(spout);
             break;
     }
     
@@ -492,11 +551,23 @@ function animate() {
         const currentTime = Date.now();
         if (currentTime - lastSpawnTime > spawnRate) {
             createObstacle();
+            
+            // Occasionally spawn a second obstacle in a different lane (more likely at higher speeds)
+            const chanceOfDoubleObstacle = Math.min(0.4, gameSpeed / 10); // Up to 40% chance at max speed
+            if (Math.random() < chanceOfDoubleObstacle) {
+                // Add a small delay before creating the second obstacle
+                setTimeout(() => {
+                    if (gameActive) { // Only create if game is still active
+                        createObstacle();
+                    }
+                }, 300); // 300ms delay between obstacles
+            }
+            
             lastSpawnTime = currentTime;
             
             // Increase difficulty over time - obstacles spawn more frequently
             // Adjusted to scale with game speed for better balance
-            spawnRate = Math.max(250, spawnRate - 25); // Decreased minimum spawn rate and increased decrement
+            spawnRate = Math.max(200, spawnRate - 30); // Decreased minimum spawn rate and increased decrement
         }
         
         // Check for collisions
